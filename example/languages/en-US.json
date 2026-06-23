@@ -1,0 +1,21 @@
+{
+  "welcome": "Welcome to the Home Page!",
+  "home": "Home",
+  "search": "Search",
+  "profile": "Profile",
+  "settings": "Settings",
+  "change_language": "Change Language",
+  "dark_mode": "Dark Mode",
+  "light_mode": "Light Mode",
+  "search_hint": "Search something...",
+  "my_profile": "My Profile",
+  "edit_profile": "Edit Profile",
+  "notifications": "Notifications",
+  "privacy": "Privacy Policy",
+  "logout": "Logout",
+  "language_en": "English",
+  "language_my": "Myanmar",
+  "select_language": "Select Language",
+  "cancel": "Cancel"
+}
+
