@@ -695,6 +695,8 @@ class _SectionHeader extends StatelessWidget {
 }
 ''',
     'lib/modules/home/cubit/home_cubit.dart': '''
+  import 'home_state.dart';
+
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 /// {@template home_cubit}
@@ -768,7 +770,8 @@ class HomeCubit extends Cubit<HomeState> {
     }
   }
 }
-
+''',
+    'lib/modules/home/cubit/home_state.dart': '''
 /// State class for [HomeCubit].
 ///
 /// Unlike Bloc which can have multiple state subclasses, Cubit typically
@@ -1004,6 +1007,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../cubit/home_cubit.dart';
+  import '../cubit/home_state.dart';
 
 /// A reusable list widget that uses [HomeCubit].
 ///
