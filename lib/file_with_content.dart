@@ -5,6 +5,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
 import '../main.dart';
+  import '../repository/home_repository.dart';
 import '../modules/home/bloc/home_bloc.dart';
 import '../modules/home/cubit/home_cubit.dart';
 import '../modules/home/screen/home_screen.dart';
@@ -34,12 +35,19 @@ class Routes {
               GoRoute(
                 name: HomeScreen.route,
                 path: HomeScreen.route,
-                builder: (context, state) => MultiBlocProvider(
-                  providers: [
-                    BlocProvider(create: (context) => HomeCubit()),
-                    BlocProvider(create: (context) => HomeBloc()),
-                  ],
-                  child: const HomeScreen(),
+                builder: (context, state) => RepositoryProvider(
+                  create: (context) => HomeRepository(),
+                  child: MultiBlocProvider(
+                    providers: [
+                      BlocProvider(
+                        create: (context) => HomeCubit(context.read<HomeRepository>()),
+                      ),
+                      BlocProvider(
+                        create: (context) => HomeBloc(context.read<HomeRepository>()),
+                      ),
+                    ],
+                    child: const HomeScreen(),
+                  ),
                 ),
               ),
             ],
@@ -696,6 +704,7 @@ class _SectionHeader extends StatelessWidget {
 ''',
     'lib/modules/home/cubit/home_cubit.dart': '''
 import 'package:flutter_bloc/flutter_bloc.dart';
+import '../../../repository/home_repository.dart';
 
   part 'home_state.dart';
 
@@ -719,7 +728,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 /// ```dart
 /// // Provide the Cubit at the widget level
 /// BlocProvider(
-///   create: (context) => HomeCubit(),
+///   create: (context) => HomeCubit(context.read<HomeRepository>()),
 ///   child: HomeScreen(),
 /// )
 ///
@@ -739,7 +748,9 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 /// {@endtemplate}
 class HomeCubit extends Cubit<HomeState> {
   /// {@macro home_cubit}
-  HomeCubit() : super(const HomeState());
+  final HomeRepository _repository;
+
+  HomeCubit(this._repository) : super(const HomeState());
 
   /// Loads sample data and updates the state.
   ///
@@ -748,11 +759,11 @@ class HomeCubit extends Cubit<HomeState> {
   Future<void> loadData() async {
     emit(state.copyWith(isLoading: true));
 
-    await Future.delayed(const Duration(seconds: 1));
+    final items = await _repository.fetchItems();
 
     emit(state.copyWith(
       isLoading: false,
-      items: ['Item 1', 'Item 2', 'Item 3'],
+      items: items,
     ));
   }
 
@@ -805,6 +816,8 @@ class HomeState {
 import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
+  import '../../../repository/home_repository.dart';
+
 part 'home_event.dart';
 part 'home_state.dart';
 
@@ -832,7 +845,7 @@ part 'home_state.dart';
 /// ```dart
 /// // Provide the Bloc at the widget level
 /// BlocProvider(
-///   create: (context) => HomeBloc()..add(HomeLoadRequested()),
+///   create: (context) => HomeBloc(context.read<HomeRepository>())..add(HomeLoadRequested()),
 ///   child: HomeScreen(),
 /// )
 ///
@@ -858,7 +871,9 @@ part 'home_state.dart';
 /// {@endtemplate}
 class HomeBloc extends Bloc<HomeEvent, HomeState> {
   /// {@macro home_bloc}
-  HomeBloc() : super(const HomeInitial()) {
+  final HomeRepository _repository;
+
+  HomeBloc(this._repository) : super(const HomeInitial()) {
     on<HomeLoadRequested>(_onHomeLoadRequested);
     on<HomeRefreshRequested>(_onHomeRefreshRequested);
     on<HomeItemAdded>(_onHomeItemAdded);
@@ -871,8 +886,7 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
   ) async {
     emit(const HomeLoadInProgress());
     try {
-      await Future.delayed(const Duration(seconds: 1));
-      final items = ['Item A', 'Item B', 'Item C'];
+      final items = await _repository.fetchItems();
       emit(HomeLoadSuccess(items: items));
     } catch (e) {
       emit(HomeLoadFailure(errorMessage: e.toString()));
@@ -885,8 +899,7 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
   ) async {
     emit(const HomeLoadInProgress());
     try {
-      await Future.delayed(const Duration(milliseconds: 500));
-      final items = ['Item A', 'Item B', 'Item C'];
+      final items = await _repository.fetchItems();
       emit(HomeLoadSuccess(items: items));
     } catch (e) {
       emit(HomeLoadFailure(errorMessage: e.toString()));
