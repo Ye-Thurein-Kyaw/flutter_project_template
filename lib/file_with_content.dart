@@ -5,211 +5,236 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
 import '../main.dart';
-  import '../repository/home_repository.dart';
-import '../modules/home/bloc/home_bloc.dart';
-import '../modules/home/cubit/home_cubit.dart';
-import '../modules/home/screen/home_screen.dart';
-import '../modules/main/screen/main_screen.dart';
-import '../modules/profile/screen/profile_screen.dart';
-import '../modules/search/screen/search_screen.dart';
-import '../modules/splash/screen/splash_screen.dart';
-
-class Routes {
-  static final GoRouter routes = GoRouter(
-    initialLocation: Splash.route,
-    debugLogDiagnostics: true,
-    navigatorKey: navigatorKey,
-    routes: [
-      GoRoute(
-        name: Splash.route,
-        path: Splash.route,
-        builder: (context, state) => const Splash(),
-      ),
-      StatefulShellRoute.indexedStack(
-        builder: (context, state, navigationShell) {
-          return MainScreen(navigationShell: navigationShell);
-        },
-        branches: [
-          StatefulShellBranch(
-            routes: [
-              GoRoute(
-                name: HomeScreen.route,
-                path: HomeScreen.route,
-                builder: (context, state) => RepositoryProvider(
-                  create: (context) => HomeRepository(),
-                  child: MultiBlocProvider(
-                    providers: [
-                      BlocProvider(
-                        create: (context) => HomeCubit(context.read<HomeRepository>()),
-                      ),
-                      BlocProvider(
-                        create: (context) => HomeBloc(context.read<HomeRepository>()),
-                      ),
-                    ],
-                    child: const HomeScreen(),
-                  ),
-                ),
-              ),
-            ],
-          ),
-          StatefulShellBranch(
-            routes: [
-              GoRoute(
-                name: SearchScreen.route,
-                path: SearchScreen.route,
-                builder: (context, state) => const SearchScreen(),
-              ),
-            ],
-          ),
-          StatefulShellBranch(
-            routes: [
-              GoRoute(
-                name: ProfileScreen.route,
-                path: ProfileScreen.route,
-                builder: (context, state) => const ProfileScreen(),
-              ),
-            ],
-          ),
-        ],
-      ),
-    ],
-  );
-}
-''',
-    'lib/config/locale_config/locale_cubit.dart': '''
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-import '../shared_pref.dart';
+import '../../../config/theme_config/theme_cubit.dart';
+import '../bloc/home_bloc.dart';
+import '../cubit/home_cubit.dart';
+import '../widget/home_bloc_item_list.dart';
+import '../widget/home_cubit_item_list.dart';
 
-class LocaleCubit extends Cubit<Locale> {
-  final Preferences _pref = Preferences();
+class HomeScreen extends StatelessWidget {
+  static const route = '/home';
+  const HomeScreen({super.key});
 
-  LocaleCubit(super.initialLocale);
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
 
-  void changeLocale(Locale locale, BuildContext context) {
-    context.setLocale(locale);
-    _pref.setLocale('\${locale.languageCode}-\${locale.countryCode}');
-    emit(locale);
+    return Scaffold(
+      backgroundColor: isDark ? const Color(0xFF0f1225) : const Color(0xFFF5F6FA),
+      body: SafeArea(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        tr('home'),
+                        style: TextStyle(
+                          fontSize: 28,
+                          fontWeight: FontWeight.bold,
+                          color: isDark ? Colors.white : const Color(0xFF1a1f38),
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        tr('welcome'),
+                        style: TextStyle(
+                          fontSize: 14,
+                          color: isDark ? Colors.grey : Colors.grey,
+                        ),
+                      ),
+                    ],
+                  ),
+                  Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: isDark ? const Color(0xFF1a1f38) : Colors.white,
+                      borderRadius: BorderRadius.circular(16),
+                      boxShadow: isDark
+                          ? []
+                          : [
+                              BoxShadow(
+                                color: Colors.black.withValues(alpha: 0.05),
+                                blurRadius: 10,
+                                offset: const Offset(0, 4),
+                              ),
+                            ],
+                    ),
+                    child: GestureDetector(
+                      onTap: () => context.read<ThemeCubit>().toggleTheme(),
+                      child: Icon(
+                        isDark ? Icons.light_mode_rounded : Icons.dark_mode_rounded,
+                        color: isDark ? Colors.white : const Color(0xFF1a1f38),
+                        size: 24,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 24),
+              _QuickActionCard(isDark: isDark),
+              const SizedBox(height: 20),
+              _SectionHeader(
+                title: 'Cubit Example',
+                subtitle: 'Simple state management',
+                icon: Icons.casino_rounded,
+                isDark: isDark,
+                onAction: () => context.read<HomeCubit>().loadData(),
+              ),
+              const SizedBox(height: 10),
+              const HomeCubitItemList(),
+              const SizedBox(height: 20),
+              _SectionHeader(
+                title: 'Bloc Example',
+                subtitle: 'Event-driven state management',
+                icon: Icons.account_tree_rounded,
+                isDark: isDark,
+                onAction: () => context.read<HomeBloc>().add(HomeLoadRequested()),
+              ),
+              const SizedBox(height: 10),
+              const HomeBlocItemList(),
+              const SizedBox(height: 24),
+            ],
+          ),
+        ),
+      ),
+    );
   }
 }
-''',
-    'lib/config/shared_pref.dart': '''
-import 'package:flutter/material.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
-class Preferences {
-  late SharedPreferences _prefs;
+class _QuickActionCard extends StatelessWidget {
+  final bool isDark;
+  const _QuickActionCard({required this.isDark});
 
-  Preferences._private();
-
-  static final _instance = Preferences._private();
-
-  factory Preferences() {
-    return _instance;
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: isDark
+              ? [const Color(0xFF1a1f38), const Color(0xFF30385D)]
+              : [const Color(0xFF005BAA), const Color(0xFF3d83ff)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: Row(
+        children: [
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Quick Start',
+                  style: TextStyle(
+                    color: Colors.white.withValues(alpha: 0.9),
+                    fontSize: 18,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                const SizedBox(height: 6),
+                Text(
+                  'Explore your dashboard today',
+                  style: TextStyle(
+                    color: Colors.white.withValues(alpha: 0.7),
+                    fontSize: 13,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Container(
+            padding: const EdgeInsets.all(14),
+            decoration: BoxDecoration(
+              color: Colors.white.withValues(alpha: 0.2),
+              borderRadius: BorderRadius.circular(14),
+            ),
+            child: const Icon(Icons.rocket_launch_rounded, color: Colors.white, size: 28),
+          ),
+        ],
+      ),
+    );
   }
+}
 
-  Future<void> initPreferences() async {
-    _prefs = await SharedPreferences.getInstance();
+class _SectionHeader extends StatelessWidget {
+  final String title;
+  final String subtitle;
+  final IconData icon;
+  final bool isDark;
+  final VoidCallback onAction;
+  const _SectionHeader({
+    required this.title,
+    required this.subtitle,
+    required this.icon,
+    required this.isDark,
+    required this.onAction,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        Container(
+          padding: const EdgeInsets.all(10),
+          decoration: BoxDecoration(
+            color: (isDark ? const Color(0xFF3d83ff) : const Color(0xFF005BAA))
+                .withValues(alpha: 0.12),
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: Icon(
+            icon,
+            color: isDark ? const Color(0xFF3d83ff) : const Color(0xFF005BAA),
+            size: 22,
+          ),
+        ),
+        const SizedBox(width: 12),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                title,
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                  color: isDark ? Colors.white : const Color(0xFF1a1f38),
+                ),
+              ),
+              Text(
+                subtitle,
+                style: TextStyle(
+                  fontSize: 12,
+                  color: isDark ? Colors.grey : Colors.grey,
+                ),
+              ),
+            ],
+          ),
+        ),
+        IconButton(
+          onPressed: onAction,
+          icon: Icon(
+            Icons.refresh_rounded,
+            color: isDark ? const Color(0xFF3d83ff) : const Color(0xFF005BAA),
+          ),
+        ),
+      ],
+    );
   }
-
-  void setString(PrefKey key, String value) {
-    _prefs.setString(key.key, value);
-  }
-
-  String? getString(PrefKey key) {
-    return _prefs.getString(key.key);
-  }
-
-  void setInt(PrefKey key, int value) {
-    _prefs.setInt(key.key, value);
-  }
-
-  int? getInt(PrefKey key) {
-    return _prefs.getInt(key.key);
-  }
-
-  void setBool(PrefKey key, bool value) {
-    _prefs.setBool(key.key, value);
-  }
-
-  bool? getBool(PrefKey key) {
-    return _prefs.getBool(key.key);
-  }
-
-  void setDouble(PrefKey key, double value) {
-    _prefs.setDouble(key.key, value);
-  }
-
-  double? getDouble(PrefKey key) {
-    return _prefs.getDouble(key.key);
-  }
-
-  void setStringList(PrefKey key, List<String> value) {
-    _prefs.setStringList(key.key, value);
-  }
-
-  List<String>? getStringList(PrefKey key) {
-    return _prefs.getStringList(key.key);
-  }
-
-  bool containsKey(PrefKey key) {
-    return _prefs.containsKey(key.key);
-  }
-
-  void remove(PrefKey key) {
-    _prefs.remove(key.key);
-  }
-
-  void clear() {
-    _prefs.clear();
-  }
-
-  void reload() {
-    _prefs.reload();
-  }
-
-  /// Use this method only for dynamic keys.
-  /// Dynamic keys are those that are not predefined in the project
-  /// and can change frequently.
-  ///
-  /// Example usage:
-  /// ```dart
-  /// setManual<bool>('isFeatureEnabled', true);
-  /// setManual<int>('userAge', 30);
-  /// setManual<String>('customMessage', 'Hello');
-  /// setManual<List<String>>('userRoles', ['Admin', 'Editor']);
-  /// ```
-  void setManual<T>(String key, T value) {
-    if (value is bool) {
-      _prefs.setBool(key, value);
-    } else if (value is String) {
-      _prefs.setString(key, value);
-    } else if (value is int) {
-      _prefs.setInt(key, value);
-    } else if (value is double) {
-      _prefs.setDouble(key, value);
-    } else if (value is List<String>) {
-      _prefs.setStringList(key, value);
-    }
-  }
-
-  /// Use this method only for dynamic keys.
-  /// Dynamic keys are those that are not predefined in the project
-  /// and can change frequently.
-  ///
-  /// Example usage:
-  /// ```dart
-  /// bool? isFeatureEnabled = getManual<bool>('isFeatureEnabled');
-  /// int? userAge = getManual<int>('userAge');
-  /// String? customMessage = getManual<String>('customMessage');
-  /// List<String>? userRoles = getManual<List<String>>('userRoles');
-  /// ```
-  T? getManual<T>(String key) {
-    if (T is bool) {
-      return _prefs.getBool(key) as T?;
-    } else if (T is String) {
+}
       return _prefs.getString(key) as T?;
     } else if (T is int) {
       return _prefs.getInt(key) as T?;
@@ -650,9 +675,6 @@ class _SectionHeader extends StatelessWidget {
   final ColorScheme colorScheme;
   final TextTheme textTheme;
   final VoidCallback onAction;
-    final theme = Theme.of(context);
-    final colorScheme = theme.colorScheme;
-    final textTheme = theme.textTheme;
 
   const _SectionHeader({
     required this.title,
@@ -666,14 +688,18 @@ class _SectionHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Row(
-                color: colorScheme.outline,
+      children: [
         Container(
           padding: const EdgeInsets.all(10),
           decoration: BoxDecoration(
             color: colorScheme.primary.withValues(alpha: 0.12),
             borderRadius: BorderRadius.circular(12),
           ),
-            style: textTheme.titleLarge?.copyWith(color: colorScheme.onSurface),
+          child: Icon(
+            icon,
+            color: colorScheme.primary,
+            size: 22,
+          ),
         ),
         const SizedBox(width: 12),
         Expanded(
