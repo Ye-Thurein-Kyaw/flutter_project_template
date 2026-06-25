@@ -9,6 +9,7 @@ import '../modules/main/screen/main_screen.dart';
 import '../modules/profile/screen/profile_screen.dart';
 import '../modules/search/screen/search_screen.dart';
 import '../modules/splash/screen/splash_screen.dart';
+import '../repository/home_repository.dart';
 
 class Routes {
   static final GoRouter routes = GoRouter(
@@ -31,12 +32,19 @@ class Routes {
               GoRoute(
                 name: HomeScreen.route,
                 path: HomeScreen.route,
-                builder: (context, state) => MultiBlocProvider(
-                  providers: [
-                    BlocProvider(create: (context) => HomeCubit()),
-                    BlocProvider(create: (context) => HomeBloc()),
-                  ],
-                  child: const HomeScreen(),
+                builder: (context, state) => RepositoryProvider(
+                  create: (context) => HomeRepository(),
+                  child: MultiBlocProvider(
+                    providers: [
+                      BlocProvider(
+                        create: (context) => HomeCubit(context.read<HomeRepository>()),
+                      ),
+                      BlocProvider(
+                        create: (context) => HomeBloc(context.read<HomeRepository>()),
+                      ),
+                    ],
+                    child: const HomeScreen(),
+                  ),
                 ),
               ),
             ],

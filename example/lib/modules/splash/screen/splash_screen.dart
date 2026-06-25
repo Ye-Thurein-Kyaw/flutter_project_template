@@ -16,18 +16,23 @@ class _SplashState extends State<Splash> {
     super.initState();
     Future.delayed(const Duration(seconds: 2), () {
       if (mounted) {
-      context.navigateAndRemoveStack(HomeScreen.route);
-    }
+        context.navigateAndRemoveStack(HomeScreen.route);
+      }
     });
   }
 
   @override
   Widget build(BuildContext context) {
-    return const Scaffold(
+    final theme = Theme.of(context);
+
+    return Scaffold(
+      backgroundColor: theme.colorScheme.surface,
       body: Center(
         child: Text(
           'Splash Screen',
-          style: TextStyle(fontSize: 24),
+          style: theme.textTheme.headlineLarge?.copyWith(
+            color: theme.colorScheme.onSurface,
+          ),
         ),
       ),
     );
