@@ -12,6 +12,7 @@ import '../modules/main/screen/main_screen.dart';
 import '../modules/profile/screen/profile_screen.dart';
 import '../modules/search/screen/search_screen.dart';
 import '../modules/splash/screen/splash_screen.dart';
+import '../repository/home_repository.dart';
 
 class Routes {
   static final GoRouter routes = GoRouter(
@@ -34,12 +35,19 @@ class Routes {
               GoRoute(
                 name: HomeScreen.route,
                 path: HomeScreen.route,
-                builder: (context, state) => MultiBlocProvider(
-                  providers: [
-                    BlocProvider(create: (context) => HomeCubit()),
-                    BlocProvider(create: (context) => HomeBloc()),
-                  ],
-                  child: const HomeScreen(),
+                builder: (context, state) => RepositoryProvider(
+                  create: (context) => HomeRepository(),
+                  child: MultiBlocProvider(
+                    providers: [
+                      BlocProvider(
+                        create: (context) => HomeCubit(context.read<HomeRepository>()),
+                      ),
+                      BlocProvider(
+                        create: (context) => HomeBloc(context.read<HomeRepository>()),
+                      ),
+                    ],
+                    child: const HomeScreen(),
+                  ),
                 ),
               ),
             ],
@@ -66,25 +74,6 @@ class Routes {
       ),
     ],
   );
-}
-''',
-    'lib/config/locale_config/locale_cubit.dart': '''
-import 'package:easy_localization/easy_localization.dart';
-import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
-
-import '../shared_pref.dart';
-
-class LocaleCubit extends Cubit<Locale> {
-  final Preferences _pref = Preferences();
-
-  LocaleCubit(super.initialLocale);
-
-  void changeLocale(Locale locale, BuildContext context) {
-    context.setLocale(locale);
-    _pref.setLocale('\${locale.languageCode}-\${locale.countryCode}');
-    emit(locale);
-  }
 }
 ''',
     'lib/config/shared_pref.dart': '''
@@ -240,7 +229,7 @@ enum PrefKey {
   
   final String key;
   const PrefKey(this.key);
-  }
+}
 ''',
     'lib/config/theme_config/theme_cubit.dart': '''
 import 'package:flutter/material.dart';
@@ -262,44 +251,85 @@ class ThemeCubit extends Cubit<ThemeMode> {
   }
 }
 ''',
+    'lib/config/locale_config/locale_cubit.dart': '''
+import 'package:easy_localization/easy_localization.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+
+import '../shared_pref.dart';
+
+class LocaleCubit extends Cubit<Locale> {
+  final Preferences _pref = Preferences();
+
+  LocaleCubit(super.initialLocale);
+
+  void changeLocale(Locale locale, BuildContext context) {
+    context.setLocale(locale);
+    _pref.setLocale('\${locale.languageCode}-\${locale.countryCode}');
+    emit(locale);
+  }
+}
+''',
     'lib/config/theme_config/theme_helper.dart': '''
 import 'package:flutter/material.dart';
 
 bool isDarkTheme(BuildContext context) => Theme.of(context).brightness == Brightness.dark;
 
 ThemeData kLightTheme = ThemeData(
-  colorScheme: ColorScheme.fromSwatch().copyWith(
-    primary: const Color(0xFF005BAA),
-    primaryContainer: const Color(0xFF3d83ff),
-    secondary: const Color(0xFFFFFFFF),
-    secondaryContainer: const Color(0xFF272727),
-    onSurface: const Color(0xFFFFFFFF),
-    surface: const Color(0xFFFFFFFF),
-    onSecondary: const Color(0xFFFFFFFF),
-    onSecondaryContainer: const Color(0xFF272727),
-    onPrimary: const Color(0xFFFAFAFA),
-    tertiary: const Color(0xFFE2E2E2),
-    onTertiaryContainer: const Color(0xFFCECECE),
-    brightness: Brightness.light,
-    onPrimaryContainer: const Color(0xFF373A40),
+  useMaterial3: true,
+  colorScheme: const ColorScheme.light(
+    primary: Color(0xFF005BAA),
+    onPrimary: Color(0xFFFFFFFF),
+    primaryContainer: Color(0xFFD7E9FF),
+    onPrimaryContainer: Color(0xFF003A65),
+    secondary: Color(0xFF3d83ff),
+    onSecondary: Color(0xFFFFFFFF),
+    secondaryContainer: Color(0xFFDCE5FF),
+    onSecondaryContainer: Color(0xFF103A8D),
+    tertiary: Color(0xFF6B5CA8),
+    onTertiary: Color(0xFFFFFFFF),
+    tertiaryContainer: Color(0xFFEBDDFF),
+    onTertiaryContainer: Color(0xFF25184D),
+    surface: Color(0xFFFFFFFF),
+    onSurface: Color(0xFF1a1f38),
+    outline: Color(0xFFD8DCE6),
+    error: Color(0xFFB3261E),
+  ),
+  textTheme: const TextTheme(
+    headlineLarge: TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
+    titleLarge: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+    titleMedium: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+    bodyMedium: TextStyle(fontSize: 14),
+    bodySmall: TextStyle(fontSize: 12),
   ),
 );
 
 ThemeData kDarkTheme = ThemeData(
-  colorScheme: ColorScheme.fromSwatch().copyWith(
-    primary: const Color(0xFF1a1f38),
-    primaryContainer: const Color(0xFF3d83ff),
-    secondary: const Color(0xFF151a30),
-    secondaryContainer: const Color(0xFFFEFEFE),
-    onSurface: const Color(0xFF151a30),
-    surface: const Color(0xFFFFFFFF),
-    onSecondary: const Color(0xFF151a30),
-    onSecondaryContainer: const Color(0xFF30385D),
-    onPrimary: const Color(0xFF30385D),
-    tertiary: const Color(0xFF1a1f38),
-    onTertiaryContainer: const Color(0xFF1A1F38),
-    brightness: Brightness.dark,
-    onPrimaryContainer:const Color(0xFFF5F5F5),
+  useMaterial3: true,
+  colorScheme: const ColorScheme.dark(
+    primary: Color(0xFF3d83ff),
+    onPrimary: Color(0xFF002A72),
+    primaryContainer: Color(0xFF0F4AA1),
+    onPrimaryContainer: Color(0xFFD7E9FF),
+    secondary: Color(0xFF82A8FF),
+    onSecondary: Color(0xFF0C214D),
+    secondaryContainer: Color(0xFF27468E),
+    onSecondaryContainer: Color(0xFFDCE5FF),
+    tertiary: Color(0xFFC8B7FF),
+    onTertiary: Color(0xFF35265F),
+    tertiaryContainer: Color(0xFF4D3C84),
+    onTertiaryContainer: Color(0xFFEBDDFF),
+    surface: Color(0xFF1a1f38),
+    onSurface: Color(0xFFF5F7FF),
+    outline: Color(0xFF30385D),
+    error: Color(0xFFFF6B6B),
+  ),
+  textTheme: const TextTheme(
+    headlineLarge: TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
+    titleLarge: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+    titleMedium: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+    bodyMedium: TextStyle(fontSize: 14),
+    bodySmall: TextStyle(fontSize: 12),
   ),
 );
 ''',
@@ -444,18 +474,23 @@ class _SplashState extends State<Splash> {
     super.initState();
     Future.delayed(const Duration(seconds: 2), () {
       if (mounted) {
-      context.navigateAndRemoveStack(HomeScreen.route);
-    }
+        context.navigateAndRemoveStack(HomeScreen.route);
+      }
     });
   }
 
   @override
   Widget build(BuildContext context) {
-    return const Scaffold(
+    final theme = Theme.of(context);
+
+    return Scaffold(
+      backgroundColor: theme.colorScheme.surface,
       body: Center(
         child: Text(
           'Splash Screen',
-          style: TextStyle(fontSize: 24),
+          style: theme.textTheme.headlineLarge?.copyWith(
+            color: theme.colorScheme.onSurface,
+          ),
         ),
       ),
     );
@@ -480,10 +515,11 @@ class HomeScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final isDark = theme.brightness == Brightness.dark;
+    final colorScheme = theme.colorScheme;
+    final textTheme = theme.textTheme;
 
     return Scaffold(
-      backgroundColor: isDark ? const Color(0xFF0f1225) : const Color(0xFFF5F6FA),
+      backgroundColor: colorScheme.surface,
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
@@ -498,42 +534,27 @@ class HomeScreen extends StatelessWidget {
                     children: [
                       Text(
                         tr('home'),
-                        style: TextStyle(
-                          fontSize: 28,
-                          fontWeight: FontWeight.bold,
-                          color: isDark ? Colors.white : const Color(0xFF1a1f38),
-                        ),
+                        style: textTheme.headlineLarge?.copyWith(color: colorScheme.onSurface),
                       ),
                       const SizedBox(height: 4),
                       Text(
                         tr('welcome'),
-                        style: TextStyle(
-                          fontSize: 14,
-                          color: isDark ? Colors.grey : Colors.grey,
-                        ),
+                        style: textTheme.bodyMedium?.copyWith(color: colorScheme.onSurface.withValues(alpha: 0.72)),
                       ),
                     ],
                   ),
                   Container(
                     padding: const EdgeInsets.all(12),
                     decoration: BoxDecoration(
-                      color: isDark ? const Color(0xFF1a1f38) : Colors.white,
+                      color: colorScheme.surface,
                       borderRadius: BorderRadius.circular(16),
-                      boxShadow: isDark
-                          ? []
-                          : [
-                              BoxShadow(
-                                color: Colors.black.withValues(alpha: 0.05),
-                                blurRadius: 10,
-                                offset: const Offset(0, 4),
-                              ),
-                            ],
+                      border: Border.all(color: colorScheme.outline),
                     ),
                     child: GestureDetector(
                       onTap: () => context.read<ThemeCubit>().toggleTheme(),
                       child: Icon(
-                        isDark ? Icons.light_mode_rounded : Icons.dark_mode_rounded,
-                        color: isDark ? Colors.white : const Color(0xFF1a1f38),
+                        theme.brightness == Brightness.dark ? Icons.light_mode_rounded : Icons.dark_mode_rounded,
+                        color: colorScheme.onSurface,
                         size: 24,
                       ),
                     ),
@@ -541,13 +562,14 @@ class HomeScreen extends StatelessWidget {
                 ],
               ),
               const SizedBox(height: 24),
-              _QuickActionCard(isDark: isDark),
+              _QuickActionCard(colorScheme: colorScheme, textTheme: textTheme),
               const SizedBox(height: 20),
               _SectionHeader(
                 title: 'Cubit Example',
                 subtitle: 'Simple state management',
                 icon: Icons.casino_rounded,
-                isDark: isDark,
+                colorScheme: colorScheme,
+                textTheme: textTheme,
                 onAction: () => context.read<HomeCubit>().loadData(),
               ),
               const SizedBox(height: 10),
@@ -557,7 +579,8 @@ class HomeScreen extends StatelessWidget {
                 title: 'Bloc Example',
                 subtitle: 'Event-driven state management',
                 icon: Icons.account_tree_rounded,
-                isDark: isDark,
+                colorScheme: colorScheme,
+                textTheme: textTheme,
                 onAction: () => context.read<HomeBloc>().add(HomeLoadRequested()),
               ),
               const SizedBox(height: 10),
@@ -572,8 +595,9 @@ class HomeScreen extends StatelessWidget {
 }
 
 class _QuickActionCard extends StatelessWidget {
-  final bool isDark;
-  const _QuickActionCard({required this.isDark});
+  final ColorScheme colorScheme;
+  final TextTheme textTheme;
+  const _QuickActionCard({required this.colorScheme, required this.textTheme});
 
   @override
   Widget build(BuildContext context) {
@@ -581,9 +605,7 @@ class _QuickActionCard extends StatelessWidget {
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
         gradient: LinearGradient(
-          colors: isDark
-              ? [const Color(0xFF1a1f38), const Color(0xFF30385D)]
-              : [const Color(0xFF005BAA), const Color(0xFF3d83ff)],
+          colors: [colorScheme.primary, colorScheme.secondary],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
@@ -597,19 +619,12 @@ class _QuickActionCard extends StatelessWidget {
               children: [
                 Text(
                   'Quick Start',
-                  style: TextStyle(
-                    color: Colors.white.withValues(alpha: 0.9),
-                    fontSize: 18,
-                    fontWeight: FontWeight.w600,
-                  ),
+                  style: textTheme.titleMedium?.copyWith(color: colorScheme.surface),
                 ),
                 const SizedBox(height: 6),
                 Text(
                   'Explore your dashboard today',
-                  style: TextStyle(
-                    color: Colors.white.withValues(alpha: 0.7),
-                    fontSize: 13,
-                  ),
+                  style: textTheme.bodySmall?.copyWith(color: colorScheme.surface.withValues(alpha: 0.78)),
                 ),
               ],
             ),
@@ -617,10 +632,10 @@ class _QuickActionCard extends StatelessWidget {
           Container(
             padding: const EdgeInsets.all(14),
             decoration: BoxDecoration(
-              color: Colors.white.withValues(alpha: 0.2),
+              color: colorScheme.surface.withValues(alpha: 0.18),
               borderRadius: BorderRadius.circular(14),
             ),
-            child: const Icon(Icons.rocket_launch_rounded, color: Colors.white, size: 28),
+            child: Icon(Icons.rocket_launch_rounded, color: colorScheme.surface, size: 28),
           ),
         ],
       ),
@@ -632,13 +647,16 @@ class _SectionHeader extends StatelessWidget {
   final String title;
   final String subtitle;
   final IconData icon;
-  final bool isDark;
+  final ColorScheme colorScheme;
+  final TextTheme textTheme;
   final VoidCallback onAction;
+
   const _SectionHeader({
     required this.title,
     required this.subtitle,
     required this.icon,
-    required this.isDark,
+    required this.colorScheme,
+    required this.textTheme,
     required this.onAction,
   });
 
@@ -649,13 +667,12 @@ class _SectionHeader extends StatelessWidget {
         Container(
           padding: const EdgeInsets.all(10),
           decoration: BoxDecoration(
-            color: (isDark ? const Color(0xFF3d83ff) : const Color(0xFF005BAA))
-                .withValues(alpha: 0.12),
+            color: colorScheme.primary.withValues(alpha: 0.12),
             borderRadius: BorderRadius.circular(12),
           ),
           child: Icon(
             icon,
-            color: isDark ? const Color(0xFF3d83ff) : const Color(0xFF005BAA),
+            color: colorScheme.primary,
             size: 22,
           ),
         ),
@@ -666,18 +683,11 @@ class _SectionHeader extends StatelessWidget {
             children: [
               Text(
                 title,
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w600,
-                  color: isDark ? Colors.white : const Color(0xFF1a1f38),
-                ),
+                style: textTheme.titleMedium?.copyWith(color: colorScheme.onSurface),
               ),
               Text(
                 subtitle,
-                style: TextStyle(
-                  fontSize: 12,
-                  color: isDark ? Colors.grey : Colors.grey,
-                ),
+                style: textTheme.bodySmall?.copyWith(color: colorScheme.onSurface.withValues(alpha: 0.72)),
               ),
             ],
           ),
@@ -686,7 +696,7 @@ class _SectionHeader extends StatelessWidget {
           onPressed: onAction,
           icon: Icon(
             Icons.refresh_rounded,
-            color: isDark ? const Color(0xFF3d83ff) : const Color(0xFF005BAA),
+            color: colorScheme.primary,
           ),
         ),
       ],
@@ -696,6 +706,9 @@ class _SectionHeader extends StatelessWidget {
 ''',
     'lib/modules/home/cubit/home_cubit.dart': '''
 import 'package:flutter_bloc/flutter_bloc.dart';
+import '../../../repository/home_repository.dart';
+
+  part 'home_state.dart';
 
 /// {@template home_cubit}
 /// A [Cubit] that manages the state of the Home screen.
@@ -717,7 +730,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 /// ```dart
 /// // Provide the Cubit at the widget level
 /// BlocProvider(
-///   create: (context) => HomeCubit(),
+///   create: (context) => HomeCubit(context.read<HomeRepository>()),
 ///   child: HomeScreen(),
 /// )
 ///
@@ -737,7 +750,9 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 /// {@endtemplate}
 class HomeCubit extends Cubit<HomeState> {
   /// {@macro home_cubit}
-  HomeCubit() : super(const HomeState());
+  final HomeRepository _repository;
+
+  HomeCubit(this._repository) : super(const HomeState());
 
   /// Loads sample data and updates the state.
   ///
@@ -746,11 +761,11 @@ class HomeCubit extends Cubit<HomeState> {
   Future<void> loadData() async {
     emit(state.copyWith(isLoading: true));
 
-    await Future.delayed(const Duration(seconds: 1));
+    final items = await _repository.fetchItems();
 
     emit(state.copyWith(
       isLoading: false,
-      items: ['Item 1', 'Item 2', 'Item 3'],
+      items: items,
     ));
   }
 
@@ -768,6 +783,9 @@ class HomeCubit extends Cubit<HomeState> {
     }
   }
 }
+''',
+    'lib/modules/home/cubit/home_state.dart': '''
+part of 'home_cubit.dart';
 
 /// State class for [HomeCubit].
 ///
@@ -800,6 +818,8 @@ class HomeState {
 import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
+  import '../../../repository/home_repository.dart';
+
 part 'home_event.dart';
 part 'home_state.dart';
 
@@ -827,7 +847,7 @@ part 'home_state.dart';
 /// ```dart
 /// // Provide the Bloc at the widget level
 /// BlocProvider(
-///   create: (context) => HomeBloc()..add(HomeLoadRequested()),
+///   create: (context) => HomeBloc(context.read<HomeRepository>())..add(HomeLoadRequested()),
 ///   child: HomeScreen(),
 /// )
 ///
@@ -853,7 +873,9 @@ part 'home_state.dart';
 /// {@endtemplate}
 class HomeBloc extends Bloc<HomeEvent, HomeState> {
   /// {@macro home_bloc}
-  HomeBloc() : super(const HomeInitial()) {
+  final HomeRepository _repository;
+
+  HomeBloc(this._repository) : super(const HomeInitial()) {
     on<HomeLoadRequested>(_onHomeLoadRequested);
     on<HomeRefreshRequested>(_onHomeRefreshRequested);
     on<HomeItemAdded>(_onHomeItemAdded);
@@ -866,8 +888,7 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
   ) async {
     emit(const HomeLoadInProgress());
     try {
-      await Future.delayed(const Duration(seconds: 1));
-      final items = ['Item A', 'Item B', 'Item C'];
+      final items = await _repository.fetchItems();
       emit(HomeLoadSuccess(items: items));
     } catch (e) {
       emit(HomeLoadFailure(errorMessage: e.toString()));
@@ -880,8 +901,7 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
   ) async {
     emit(const HomeLoadInProgress());
     try {
-      await Future.delayed(const Duration(milliseconds: 500));
-      final items = ['Item A', 'Item B', 'Item C'];
+      final items = await _repository.fetchItems();
       emit(HomeLoadSuccess(items: items));
     } catch (e) {
       emit(HomeLoadFailure(errorMessage: e.toString()));
@@ -1015,7 +1035,8 @@ class HomeCubitItemList extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final isDark = theme.brightness == Brightness.dark;
+    final colorScheme = theme.colorScheme;
+    final textTheme = theme.textTheme;
 
     return BlocBuilder<HomeCubit, HomeState>(
       builder: (context, state) {
@@ -1027,7 +1048,7 @@ class HomeCubitItemList extends StatelessWidget {
           return Center(
             child: Text(
               'No items yet',
-              style: TextStyle(color: isDark ? Colors.grey : Colors.grey),
+              style: textTheme.bodyMedium?.copyWith(color: colorScheme.onSurface.withValues(alpha: 0.72)),
             ),
           );
         }
@@ -1038,20 +1059,21 @@ class HomeCubitItemList extends StatelessWidget {
           itemCount: state.items.length,
           itemBuilder: (context, index) {
             return Card(
-              color: isDark ? const Color(0xFF1a1f38) : Colors.white,
+              color: colorScheme.surface,
               margin: const EdgeInsets.symmetric(vertical: 6),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(14),
+                side: BorderSide(color: colorScheme.outline),
+              ),
               child: ListTile(
                 title: Text(
                   state.items[index],
-                  style: TextStyle(
-                    color: isDark ? Colors.white : const Color(0xFF1a1f38),
-                  ),
+                  style: textTheme.bodyMedium?.copyWith(color: colorScheme.onSurface),
                 ),
                 trailing: IconButton(
                   icon: Icon(
                     Icons.delete_outline_rounded,
-                    color: isDark ? Colors.redAccent : Colors.red,
+                    color: colorScheme.error,
                     size: 20,
                   ),
                   onPressed: () => context.read<HomeCubit>().removeItem(index),
@@ -1081,7 +1103,8 @@ class HomeBlocItemList extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final isDark = theme.brightness == Brightness.dark;
+    final colorScheme = theme.colorScheme;
+    final textTheme = theme.textTheme;
 
     return BlocBuilder<HomeBloc, HomeState>(
       builder: (context, state) {
@@ -1093,7 +1116,7 @@ class HomeBlocItemList extends StatelessWidget {
           return Center(
             child: Text(
               'Error: \${state.errorMessage}',
-              style: const TextStyle(color: Colors.red),
+              style: textTheme.bodyMedium?.copyWith(color: colorScheme.error),
             ),
           );
         }
@@ -1103,7 +1126,7 @@ class HomeBlocItemList extends StatelessWidget {
             return Center(
               child: Text(
                 'No items yet',
-                style: TextStyle(color: isDark ? Colors.grey : Colors.grey),
+                style: textTheme.bodyMedium?.copyWith(color: colorScheme.onSurface.withValues(alpha: 0.72)),
               ),
             );
           }
@@ -1114,20 +1137,21 @@ class HomeBlocItemList extends StatelessWidget {
             itemCount: state.items.length,
             itemBuilder: (context, index) {
               return Card(
-                color: isDark ? const Color(0xFF1a1f38) : Colors.white,
+                color: colorScheme.surface,
                 margin: const EdgeInsets.symmetric(vertical: 6),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(14),
+                  side: BorderSide(color: colorScheme.outline),
+                ),
                 child: ListTile(
                   title: Text(
                     state.items[index],
-                    style: TextStyle(
-                      color: isDark ? Colors.white : const Color(0xFF1a1f38),
-                    ),
+                    style: textTheme.bodyMedium?.copyWith(color: colorScheme.onSurface),
                   ),
                   trailing: IconButton(
                     icon: Icon(
                       Icons.delete_outline_rounded,
-                      color: isDark ? Colors.redAccent : Colors.red,
+                      color: colorScheme.error,
                       size: 20,
                     ),
                     onPressed: () => context.read<HomeBloc>().add(HomeItemRemoved(index)),
@@ -1385,16 +1409,17 @@ class MainScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final isDark = theme.brightness == Brightness.dark;
+    final colorScheme = theme.colorScheme;
+    final textTheme = theme.textTheme;
 
     return Scaffold(
       body: navigationShell,
       bottomNavigationBar: Container(
         decoration: BoxDecoration(
-          color: isDark ? const Color(0xFF1a1f38) : Colors.white,
+          color: colorScheme.surface,
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withValues(alpha: 0.08),
+              color: colorScheme.onSurface.withValues(alpha: 0.08),
               blurRadius: 20,
               offset: const Offset(0, -2),
             ),
@@ -1410,18 +1435,24 @@ class MainScreen extends StatelessWidget {
                   icon: Icons.home_rounded,
                   label: tr('home'),
                   isSelected: navigationShell.currentIndex == 0,
+                  colorScheme: colorScheme,
+                  textTheme: textTheme,
                   onTap: () => navigationShell.goBranch(0),
                 ),
                 _NavItem(
                   icon: Icons.search_rounded,
                   label: tr('search'),
                   isSelected: navigationShell.currentIndex == 1,
+                  colorScheme: colorScheme,
+                  textTheme: textTheme,
                   onTap: () => navigationShell.goBranch(1),
                 ),
                 _NavItem(
                   icon: Icons.person_rounded,
                   label: tr('profile'),
                   isSelected: navigationShell.currentIndex == 2,
+                  colorScheme: colorScheme,
+                  textTheme: textTheme,
                   onTap: () => navigationShell.goBranch(2),
                 ),
               ],
@@ -1437,20 +1468,21 @@ class _NavItem extends StatelessWidget {
   final IconData icon;
   final String label;
   final bool isSelected;
+  final ColorScheme colorScheme;
+  final TextTheme textTheme;
   final VoidCallback onTap;
 
   const _NavItem({
     required this.icon,
     required this.label,
     required this.isSelected,
+    required this.colorScheme,
+    required this.textTheme,
     required this.onTap,
   });
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final isDark = theme.brightness == Brightness.dark;
-
     return GestureDetector(
       onTap: onTap,
       behavior: HitTestBehavior.opaque,
@@ -1463,8 +1495,7 @@ class _NavItem extends StatelessWidget {
         ),
         decoration: BoxDecoration(
           color: isSelected
-              ? (isDark ? const Color(0xFF3d83ff) : const Color(0xFF005BAA))
-                  .withValues(alpha: 0.15)
+              ? colorScheme.primary.withValues(alpha: 0.15)
               : Colors.transparent,
           borderRadius: BorderRadius.circular(16),
         ),
@@ -1474,20 +1505,17 @@ class _NavItem extends StatelessWidget {
             Icon(
               icon,
               color: isSelected
-                  ? (isDark ? const Color(0xFF3d83ff) : const Color(0xFF005BAA))
-                  : (isDark ? Colors.grey : Colors.grey),
+                  ? colorScheme.primary
+                  : colorScheme.onSurface.withValues(alpha: 0.6),
               size: 24,
             ),
             if (isSelected) ...[
               const SizedBox(width: 8),
               Text(
                 label,
-                style: TextStyle(
-                  color: isDark
-                      ? const Color(0xFF3d83ff)
-                      : const Color(0xFF005BAA),
+                style: textTheme.bodySmall?.copyWith(
+                  color: colorScheme.primary,
                   fontWeight: FontWeight.w600,
-                  fontSize: 13,
                 ),
               ),
             ],
@@ -1510,10 +1538,11 @@ class SearchScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final isDark = theme.brightness == Brightness.dark;
+    final colorScheme = theme.colorScheme;
+    final textTheme = theme.textTheme;
 
     return Scaffold(
-      backgroundColor: isDark ? const Color(0xFF0f1225) : const Color(0xFFF5F6FA),
+      backgroundColor: colorScheme.surface,
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
@@ -1522,37 +1551,20 @@ class SearchScreen extends StatelessWidget {
             children: [
               Text(
                 tr('search'),
-                style: TextStyle(
-                  fontSize: 28,
-                  fontWeight: FontWeight.bold,
-                  color: isDark ? Colors.white : const Color(0xFF1a1f38),
-                ),
+                style: textTheme.headlineLarge?.copyWith(color: colorScheme.onSurface),
               ),
               const SizedBox(height: 20),
               Container(
                 decoration: BoxDecoration(
-                  color: isDark ? const Color(0xFF1a1f38) : Colors.white,
+                  color: colorScheme.surface,
                   borderRadius: BorderRadius.circular(16),
-                  boxShadow: isDark
-                      ? []
-                      : [
-                          BoxShadow(
-                            color: Colors.black.withValues(alpha: 0.05),
-                            blurRadius: 10,
-                            offset: const Offset(0, 4),
-                          ),
-                        ],
+                  border: Border.all(color: colorScheme.outline),
                 ),
                 child: TextField(
                   decoration: InputDecoration(
                     hintText: tr('search_hint'),
-                    hintStyle: TextStyle(
-                      color: isDark ? Colors.grey : Colors.grey,
-                    ),
-                    prefixIcon: Icon(
-                      Icons.search_rounded,
-                      color: isDark ? const Color(0xFF3d83ff) : const Color(0xFF005BAA),
-                    ),
+                    hintStyle: textTheme.bodyMedium?.copyWith(color: colorScheme.onSurface.withValues(alpha: 0.62)),
+                    prefixIcon: Icon(Icons.search_rounded, color: colorScheme.primary),
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(16),
                       borderSide: BorderSide.none,
@@ -1569,9 +1581,7 @@ class SearchScreen extends StatelessWidget {
                     fillColor: Colors.transparent,
                     contentPadding: const EdgeInsets.symmetric(vertical: 16),
                   ),
-                  style: TextStyle(
-                    color: isDark ? Colors.white : const Color(0xFF1a1f38),
-                  ),
+                  style: textTheme.bodyMedium?.copyWith(color: colorScheme.onSurface),
                 ),
               ),
               const SizedBox(height: 24),
@@ -1583,15 +1593,12 @@ class SearchScreen extends StatelessWidget {
                       Icon(
                         Icons.search_rounded,
                         size: 80,
-                        color: isDark ? const Color(0xFF30385D) : Colors.grey.shade300,
+                        color: colorScheme.outline,
                       ),
                       const SizedBox(height: 16),
                       Text(
                         tr('search_hint'),
-                        style: TextStyle(
-                          fontSize: 16,
-                          color: isDark ? Colors.grey : Colors.grey,
-                        ),
+                        style: textTheme.bodyMedium?.copyWith(color: colorScheme.onSurface.withValues(alpha: 0.72)),
                       ),
                     ],
                   ),
@@ -1621,10 +1628,11 @@ class ProfileScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final isDark = theme.brightness == Brightness.dark;
+    final colorScheme = theme.colorScheme;
+    final textTheme = theme.textTheme;
 
     return Scaffold(
-      backgroundColor: isDark ? const Color(0xFF0f1225) : const Color(0xFFF5F6FA),
+      backgroundColor: colorScheme.surface,
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
@@ -1633,16 +1641,12 @@ class ProfileScreen extends StatelessWidget {
             children: [
               Text(
                 tr('profile'),
-                style: TextStyle(
-                  fontSize: 28,
-                  fontWeight: FontWeight.bold,
-                  color: isDark ? Colors.white : const Color(0xFF1a1f38),
-                ),
+                style: textTheme.headlineLarge?.copyWith(color: colorScheme.onSurface),
               ),
               const SizedBox(height: 24),
-              _ProfileCard(isDark: isDark),
+              _ProfileCard(colorScheme: colorScheme, textTheme: textTheme),
               const SizedBox(height: 20),
-              _SettingsSection(isDark: isDark),
+              _SettingsSection(colorScheme: colorScheme, textTheme: textTheme),
             ],
           ),
         ),
@@ -1652,9 +1656,10 @@ class ProfileScreen extends StatelessWidget {
 }
 
 class _ProfileCard extends StatelessWidget {
-  final bool isDark;
+  final ColorScheme colorScheme;
+  final TextTheme textTheme;
 
-  const _ProfileCard({required this.isDark});
+  const _ProfileCard({required this.colorScheme, required this.textTheme});
 
   @override
   Widget build(BuildContext context) {
@@ -1662,9 +1667,7 @@ class _ProfileCard extends StatelessWidget {
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
         gradient: LinearGradient(
-          colors: isDark
-              ? [const Color(0xFF1a1f38), const Color(0xFF30385D)]
-              : [const Color(0xFF005BAA), const Color(0xFF3d83ff)],
+          colors: [colorScheme.primary, colorScheme.secondary],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
@@ -1675,10 +1678,10 @@ class _ProfileCard extends StatelessWidget {
           Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: Colors.white.withValues(alpha: 0.2),
+              color: colorScheme.surface.withValues(alpha: 0.18),
               shape: BoxShape.circle,
             ),
-            child: const Icon(Icons.person_rounded, color: Colors.white, size: 36),
+            child: Icon(Icons.person_rounded, color: colorScheme.surface, size: 36),
           ),
           const SizedBox(width: 16),
           Expanded(
@@ -1687,19 +1690,12 @@ class _ProfileCard extends StatelessWidget {
               children: [
                 Text(
                   tr('my_profile'),
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                  ),
+                  style: textTheme.titleLarge?.copyWith(color: colorScheme.surface),
                 ),
                 const SizedBox(height: 4),
                 Text(
                   'user@example.com',
-                  style: TextStyle(
-                    color: Colors.white.withValues(alpha: 0.8),
-                    fontSize: 14,
-                  ),
+                  style: textTheme.bodyMedium?.copyWith(color: colorScheme.surface.withValues(alpha: 0.8)),
                 ),
               ],
             ),
@@ -1707,10 +1703,10 @@ class _ProfileCard extends StatelessWidget {
           Container(
             padding: const EdgeInsets.all(8),
             decoration: BoxDecoration(
-              color: Colors.white.withValues(alpha: 0.2),
+              color: colorScheme.surface.withValues(alpha: 0.18),
               borderRadius: BorderRadius.circular(12),
             ),
-            child: const Icon(Icons.edit_rounded, color: Colors.white, size: 20),
+            child: Icon(Icons.edit_rounded, color: colorScheme.surface, size: 20),
           ),
         ],
       ),
@@ -1719,9 +1715,10 @@ class _ProfileCard extends StatelessWidget {
 }
 
 class _SettingsSection extends StatelessWidget {
-  final bool isDark;
+  final ColorScheme colorScheme;
+  final TextTheme textTheme;
 
-  const _SettingsSection({required this.isDark});
+  const _SettingsSection({required this.colorScheme, required this.textTheme});
 
   @override
   Widget build(BuildContext context) {
@@ -1732,45 +1729,46 @@ class _SettingsSection extends StatelessWidget {
           padding: const EdgeInsets.only(left: 4, bottom: 12),
           child: Text(
             tr('settings'),
-            style: TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.w600,
-              color: isDark ? Colors.white : const Color(0xFF1a1f38),
-            ),
+            style: textTheme.titleMedium?.copyWith(color: colorScheme.onSurface),
           ),
         ),
         _SettingsTile(
           icon: Icons.language_rounded,
           title: tr('change_language'),
-          isDark: isDark,
+          colorScheme: colorScheme,
+          textTheme: textTheme,
           onTap: () => _showLanguageSheet(context),
         ),
         const SizedBox(height: 12),
         _SettingsTile(
-          icon: isDark ? Icons.light_mode_rounded : Icons.dark_mode_rounded,
-          title: isDark ? tr('light_mode') : tr('dark_mode'),
-          isDark: isDark,
+          icon: Theme.of(context).brightness == Brightness.dark ? Icons.light_mode_rounded : Icons.dark_mode_rounded,
+          title: Theme.of(context).brightness == Brightness.dark ? tr('light_mode') : tr('dark_mode'),
+          colorScheme: colorScheme,
+          textTheme: textTheme,
           onTap: () => context.read<ThemeCubit>().toggleTheme(),
         ),
         const SizedBox(height: 12),
         _SettingsTile(
           icon: Icons.notifications_rounded,
           title: tr('notifications'),
-          isDark: isDark,
+          colorScheme: colorScheme,
+          textTheme: textTheme,
           onTap: () {},
         ),
         const SizedBox(height: 12),
         _SettingsTile(
           icon: Icons.privacy_tip_rounded,
           title: tr('privacy'),
-          isDark: isDark,
+          colorScheme: colorScheme,
+          textTheme: textTheme,
           onTap: () {},
         ),
         const SizedBox(height: 24),
         _SettingsTile(
           icon: Icons.logout_rounded,
           title: tr('logout'),
-          isDark: isDark,
+          colorScheme: colorScheme,
+          textTheme: textTheme,
           isDestructive: true,
           onTap: () {},
         ),
@@ -1779,14 +1777,18 @@ class _SettingsSection extends StatelessWidget {
   }
 
   void _showLanguageSheet(BuildContext context) {
+    final localeCubit = context.read<LocaleCubit>();
     showModalBottomSheet(
       context: context,
-      backgroundColor: isDark ? const Color(0xFF1a1f38) : Colors.white,
+      backgroundColor: Theme.of(context).colorScheme.surface,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
       builder: (context) {
-        return _LanguageSheet(isDark: isDark);
+        return BlocProvider.value(
+          value: localeCubit,
+          child: const _LanguageSheet(),
+        );
       },
     );
   }
@@ -1795,14 +1797,16 @@ class _SettingsSection extends StatelessWidget {
 class _SettingsTile extends StatelessWidget {
   final IconData icon;
   final String title;
-  final bool isDark;
+  final ColorScheme colorScheme;
+  final TextTheme textTheme;
   final bool isDestructive;
   final VoidCallback onTap;
 
   const _SettingsTile({
     required this.icon,
     required this.title,
-    required this.isDark,
+    required this.colorScheme,
+    required this.textTheme,
     this.isDestructive = false,
     required this.onTap,
   });
@@ -1810,11 +1814,11 @@ class _SettingsTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final accentColor = isDestructive
-        ? Colors.red
-        : (isDark ? const Color(0xFF3d83ff) : const Color(0xFF005BAA));
+        ? colorScheme.error
+        : colorScheme.primary;
 
     return Material(
-      color: isDark ? const Color(0xFF1a1f38) : Colors.white,
+      color: colorScheme.surface,
       borderRadius: BorderRadius.circular(16),
       child: InkWell(
         onTap: onTap,
@@ -1838,18 +1842,15 @@ class _SettingsTile extends StatelessWidget {
               Expanded(
                 child: Text(
                   title,
-                  style: TextStyle(
-                    fontSize: 15,
+                  style: textTheme.bodyMedium?.copyWith(
                     fontWeight: FontWeight.w500,
-                    color: isDestructive
-                        ? Colors.red
-                        : (isDark ? Colors.white : const Color(0xFF1a1f38)),
+                    color: isDestructive ? colorScheme.error : colorScheme.onSurface,
                   ),
                 ),
               ),
               Icon(
                 Icons.chevron_right_rounded,
-                color: isDark ? Colors.grey : Colors.grey,
+                color: colorScheme.onSurface.withValues(alpha: 0.55),
                 size: 20,
               ),
             ],
@@ -1861,12 +1862,14 @@ class _SettingsTile extends StatelessWidget {
 }
 
 class _LanguageSheet extends StatelessWidget {
-  final bool isDark;
-
-  const _LanguageSheet({required this.isDark});
+  const _LanguageSheet();
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final textTheme = theme.textTheme;
+
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
       child: Column(
@@ -1879,32 +1882,26 @@ class _LanguageSheet extends StatelessWidget {
               height: 4,
               margin: const EdgeInsets.only(bottom: 20),
               decoration: BoxDecoration(
-                color: isDark ? Colors.grey : Colors.grey.shade300,
+                color: colorScheme.outline,
                 borderRadius: BorderRadius.circular(2),
               ),
             ),
           ),
           Text(
             tr('select_language'),
-            style: TextStyle(
-              fontSize: 20,
-              fontWeight: FontWeight.bold,
-              color: isDark ? Colors.white : const Color(0xFF1a1f38),
-            ),
+            style: textTheme.titleLarge?.copyWith(color: colorScheme.onSurface),
           ),
           const SizedBox(height: 20),
           _LanguageOption(
             flag: '\\u{1F1FA}\\u{1F1F8}',
             label: tr('language_en'),
             locale: const Locale('en', 'US'),
-            isDark: isDark,
           ),
           const SizedBox(height: 12),
           _LanguageOption(
             flag: '\\u{1F1F2}\\u{1F1F2}',
             label: tr('language_my'),
             locale: const Locale('my', 'MM'),
-            isDark: isDark,
           ),
           const SizedBox(height: 16),
           SizedBox(
@@ -1919,10 +1916,7 @@ class _LanguageSheet extends StatelessWidget {
               ),
               child: Text(
                 tr('cancel'),
-                style: TextStyle(
-                  color: isDark ? Colors.grey : Colors.grey,
-                  fontSize: 15,
-                ),
+                style: textTheme.bodyMedium?.copyWith(color: colorScheme.onSurface.withValues(alpha: 0.72)),
               ),
             ),
           ),
@@ -1936,25 +1930,23 @@ class _LanguageOption extends StatelessWidget {
   final String flag;
   final String label;
   final Locale locale;
-  final bool isDark;
 
   const _LanguageOption({
     required this.flag,
     required this.label,
     required this.locale,
-    required this.isDark,
   });
 
   @override
   Widget build(BuildContext context) {
     final currentLocale = context.locale;
     final isSelected = currentLocale == locale;
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final textTheme = theme.textTheme;
 
     return Material(
-      color: isSelected
-          ? (isDark ? const Color(0xFF3d83ff) : const Color(0xFF005BAA))
-              .withValues(alpha: 0.12)
-          : (isDark ? const Color(0xFF30385D) : const Color(0xFFF5F6FA)),
+      color: isSelected ? colorScheme.primary.withValues(alpha: 0.12) : colorScheme.surface,
       borderRadius: BorderRadius.circular(14),
       child: InkWell(
         onTap: () {
@@ -1967,32 +1959,26 @@ class _LanguageOption extends StatelessWidget {
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(14),
             border: isSelected
-                ? Border.all(
-                    color: isDark ? const Color(0xFF3d83ff) : const Color(0xFF005BAA),
-                    width: 1.5,
-                  )
+                ? Border.all(color: colorScheme.primary, width: 1.5)
                 : null,
           ),
           child: Row(
             children: [
-              Text(flag, style: const TextStyle(fontSize: 28)),
+              Text(flag, style: textTheme.titleLarge),
               const SizedBox(width: 14),
               Expanded(
                 child: Text(
                   label,
-                  style: TextStyle(
-                    fontSize: 16,
+                  style: textTheme.bodyMedium?.copyWith(
                     fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
-                    color: isSelected
-                        ? (isDark ? const Color(0xFF3d83ff) : const Color(0xFF005BAA))
-                        : (isDark ? Colors.white : const Color(0xFF1a1f38)),
+                    color: isSelected ? colorScheme.primary : colorScheme.onSurface,
                   ),
                 ),
               ),
               if (isSelected)
                 Icon(
                   Icons.check_circle_rounded,
-                  color: isDark ? const Color(0xFF3d83ff) : const Color(0xFF005BAA),
+                  color: colorScheme.primary,
                   size: 22,
                 ),
             ],

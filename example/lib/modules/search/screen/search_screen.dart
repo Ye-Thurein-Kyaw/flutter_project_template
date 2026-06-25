@@ -9,10 +9,11 @@ class SearchScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final isDark = theme.brightness == Brightness.dark;
+    final colorScheme = theme.colorScheme;
+    final textTheme = theme.textTheme;
 
     return Scaffold(
-      backgroundColor: isDark ? const Color(0xFF0f1225) : const Color(0xFFF5F6FA),
+      backgroundColor: colorScheme.surface,
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
@@ -21,37 +22,20 @@ class SearchScreen extends StatelessWidget {
             children: [
               Text(
                 tr('search'),
-                style: TextStyle(
-                  fontSize: 28,
-                  fontWeight: FontWeight.bold,
-                  color: isDark ? Colors.white : const Color(0xFF1a1f38),
-                ),
+                style: textTheme.headlineLarge?.copyWith(color: colorScheme.onSurface),
               ),
               const SizedBox(height: 20),
               Container(
                 decoration: BoxDecoration(
-                  color: isDark ? const Color(0xFF1a1f38) : Colors.white,
+                  color: colorScheme.surface,
                   borderRadius: BorderRadius.circular(16),
-                  boxShadow: isDark
-                      ? []
-                      : [
-                          BoxShadow(
-                            color: Colors.black.withValues(alpha: 0.05),
-                            blurRadius: 10,
-                            offset: const Offset(0, 4),
-                          ),
-                        ],
+                  border: Border.all(color: colorScheme.outline),
                 ),
                 child: TextField(
                   decoration: InputDecoration(
                     hintText: tr('search_hint'),
-                    hintStyle: TextStyle(
-                      color: isDark ? Colors.grey : Colors.grey,
-                    ),
-                    prefixIcon: Icon(
-                      Icons.search_rounded,
-                      color: isDark ? const Color(0xFF3d83ff) : const Color(0xFF005BAA),
-                    ),
+                    hintStyle: textTheme.bodyMedium?.copyWith(color: colorScheme.onSurface.withValues(alpha: 0.62)),
+                    prefixIcon: Icon(Icons.search_rounded, color: colorScheme.primary),
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(16),
                       borderSide: BorderSide.none,
@@ -68,9 +52,7 @@ class SearchScreen extends StatelessWidget {
                     fillColor: Colors.transparent,
                     contentPadding: const EdgeInsets.symmetric(vertical: 16),
                   ),
-                  style: TextStyle(
-                    color: isDark ? Colors.white : const Color(0xFF1a1f38),
-                  ),
+                  style: textTheme.bodyMedium?.copyWith(color: colorScheme.onSurface),
                 ),
               ),
               const SizedBox(height: 24),
@@ -82,15 +64,12 @@ class SearchScreen extends StatelessWidget {
                       Icon(
                         Icons.search_rounded,
                         size: 80,
-                        color: isDark ? const Color(0xFF30385D) : Colors.grey.shade300,
+                        color: colorScheme.outline,
                       ),
                       const SizedBox(height: 16),
                       Text(
                         tr('search_hint'),
-                        style: TextStyle(
-                          fontSize: 16,
-                          color: isDark ? Colors.grey : Colors.grey,
-                        ),
+                        style: textTheme.bodyMedium?.copyWith(color: colorScheme.onSurface.withValues(alpha: 0.72)),
                       ),
                     ],
                   ),

@@ -13,10 +13,11 @@ class ProfileScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final isDark = theme.brightness == Brightness.dark;
+    final colorScheme = theme.colorScheme;
+    final textTheme = theme.textTheme;
 
     return Scaffold(
-      backgroundColor: isDark ? const Color(0xFF0f1225) : const Color(0xFFF5F6FA),
+      backgroundColor: colorScheme.surface,
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
@@ -25,16 +26,12 @@ class ProfileScreen extends StatelessWidget {
             children: [
               Text(
                 tr('profile'),
-                style: TextStyle(
-                  fontSize: 28,
-                  fontWeight: FontWeight.bold,
-                  color: isDark ? Colors.white : const Color(0xFF1a1f38),
-                ),
+                style: textTheme.headlineLarge?.copyWith(color: colorScheme.onSurface),
               ),
               const SizedBox(height: 24),
-              _ProfileCard(isDark: isDark),
+              _ProfileCard(colorScheme: colorScheme, textTheme: textTheme),
               const SizedBox(height: 20),
-              _SettingsSection(isDark: isDark),
+              _SettingsSection(colorScheme: colorScheme, textTheme: textTheme),
             ],
           ),
         ),
@@ -44,9 +41,10 @@ class ProfileScreen extends StatelessWidget {
 }
 
 class _ProfileCard extends StatelessWidget {
-  final bool isDark;
+  final ColorScheme colorScheme;
+  final TextTheme textTheme;
 
-  const _ProfileCard({required this.isDark});
+  const _ProfileCard({required this.colorScheme, required this.textTheme});
 
   @override
   Widget build(BuildContext context) {
@@ -54,9 +52,7 @@ class _ProfileCard extends StatelessWidget {
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
         gradient: LinearGradient(
-          colors: isDark
-              ? [const Color(0xFF1a1f38), const Color(0xFF30385D)]
-              : [const Color(0xFF005BAA), const Color(0xFF3d83ff)],
+          colors: [colorScheme.primary, colorScheme.secondary],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
@@ -67,10 +63,10 @@ class _ProfileCard extends StatelessWidget {
           Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: Colors.white.withValues(alpha: 0.2),
+              color: colorScheme.surface.withValues(alpha: 0.18),
               shape: BoxShape.circle,
             ),
-            child: const Icon(Icons.person_rounded, color: Colors.white, size: 36),
+            child: Icon(Icons.person_rounded, color: colorScheme.surface, size: 36),
           ),
           const SizedBox(width: 16),
           Expanded(
@@ -79,19 +75,12 @@ class _ProfileCard extends StatelessWidget {
               children: [
                 Text(
                   tr('my_profile'),
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                  ),
+                  style: textTheme.titleLarge?.copyWith(color: colorScheme.surface),
                 ),
                 const SizedBox(height: 4),
                 Text(
                   'user@example.com',
-                  style: TextStyle(
-                    color: Colors.white.withValues(alpha: 0.8),
-                    fontSize: 14,
-                  ),
+                  style: textTheme.bodyMedium?.copyWith(color: colorScheme.surface.withValues(alpha: 0.8)),
                 ),
               ],
             ),
@@ -99,10 +88,10 @@ class _ProfileCard extends StatelessWidget {
           Container(
             padding: const EdgeInsets.all(8),
             decoration: BoxDecoration(
-              color: Colors.white.withValues(alpha: 0.2),
+              color: colorScheme.surface.withValues(alpha: 0.18),
               borderRadius: BorderRadius.circular(12),
             ),
-            child: const Icon(Icons.edit_rounded, color: Colors.white, size: 20),
+            child: Icon(Icons.edit_rounded, color: colorScheme.surface, size: 20),
           ),
         ],
       ),
@@ -111,9 +100,10 @@ class _ProfileCard extends StatelessWidget {
 }
 
 class _SettingsSection extends StatelessWidget {
-  final bool isDark;
+  final ColorScheme colorScheme;
+  final TextTheme textTheme;
 
-  const _SettingsSection({required this.isDark});
+  const _SettingsSection({required this.colorScheme, required this.textTheme});
 
   @override
   Widget build(BuildContext context) {
@@ -124,45 +114,46 @@ class _SettingsSection extends StatelessWidget {
           padding: const EdgeInsets.only(left: 4, bottom: 12),
           child: Text(
             tr('settings'),
-            style: TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.w600,
-              color: isDark ? Colors.white : const Color(0xFF1a1f38),
-            ),
+            style: textTheme.titleMedium?.copyWith(color: colorScheme.onSurface),
           ),
         ),
         _SettingsTile(
           icon: Icons.language_rounded,
           title: tr('change_language'),
-          isDark: isDark,
+          colorScheme: colorScheme,
+          textTheme: textTheme,
           onTap: () => _showLanguageSheet(context),
         ),
         const SizedBox(height: 12),
         _SettingsTile(
-          icon: isDark ? Icons.light_mode_rounded : Icons.dark_mode_rounded,
-          title: isDark ? tr('light_mode') : tr('dark_mode'),
-          isDark: isDark,
+          icon: Theme.of(context).brightness == Brightness.dark ? Icons.light_mode_rounded : Icons.dark_mode_rounded,
+          title: Theme.of(context).brightness == Brightness.dark ? tr('light_mode') : tr('dark_mode'),
+          colorScheme: colorScheme,
+          textTheme: textTheme,
           onTap: () => context.read<ThemeCubit>().toggleTheme(),
         ),
         const SizedBox(height: 12),
         _SettingsTile(
           icon: Icons.notifications_rounded,
           title: tr('notifications'),
-          isDark: isDark,
+          colorScheme: colorScheme,
+          textTheme: textTheme,
           onTap: () {},
         ),
         const SizedBox(height: 12),
         _SettingsTile(
           icon: Icons.privacy_tip_rounded,
           title: tr('privacy'),
-          isDark: isDark,
+          colorScheme: colorScheme,
+          textTheme: textTheme,
           onTap: () {},
         ),
         const SizedBox(height: 24),
         _SettingsTile(
           icon: Icons.logout_rounded,
           title: tr('logout'),
-          isDark: isDark,
+          colorScheme: colorScheme,
+          textTheme: textTheme,
           isDestructive: true,
           onTap: () {},
         ),
@@ -171,14 +162,18 @@ class _SettingsSection extends StatelessWidget {
   }
 
   void _showLanguageSheet(BuildContext context) {
+    final localeCubit = context.read<LocaleCubit>();
     showModalBottomSheet(
       context: context,
-      backgroundColor: isDark ? const Color(0xFF1a1f38) : Colors.white,
+      backgroundColor: Theme.of(context).colorScheme.surface,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
       builder: (context) {
-        return _LanguageSheet(isDark: isDark);
+        return BlocProvider.value(
+          value: localeCubit,
+          child: const _LanguageSheet(),
+        );
       },
     );
   }
@@ -187,14 +182,16 @@ class _SettingsSection extends StatelessWidget {
 class _SettingsTile extends StatelessWidget {
   final IconData icon;
   final String title;
-  final bool isDark;
+  final ColorScheme colorScheme;
+  final TextTheme textTheme;
   final bool isDestructive;
   final VoidCallback onTap;
 
   const _SettingsTile({
     required this.icon,
     required this.title,
-    required this.isDark,
+    required this.colorScheme,
+    required this.textTheme,
     this.isDestructive = false,
     required this.onTap,
   });
@@ -202,11 +199,11 @@ class _SettingsTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final accentColor = isDestructive
-        ? Colors.red
-        : (isDark ? const Color(0xFF3d83ff) : const Color(0xFF005BAA));
+        ? colorScheme.error
+        : colorScheme.primary;
 
     return Material(
-      color: isDark ? const Color(0xFF1a1f38) : Colors.white,
+      color: colorScheme.surface,
       borderRadius: BorderRadius.circular(16),
       child: InkWell(
         onTap: onTap,
@@ -230,18 +227,15 @@ class _SettingsTile extends StatelessWidget {
               Expanded(
                 child: Text(
                   title,
-                  style: TextStyle(
-                    fontSize: 15,
+                  style: textTheme.bodyMedium?.copyWith(
                     fontWeight: FontWeight.w500,
-                    color: isDestructive
-                        ? Colors.red
-                        : (isDark ? Colors.white : const Color(0xFF1a1f38)),
+                    color: isDestructive ? colorScheme.error : colorScheme.onSurface,
                   ),
                 ),
               ),
               Icon(
                 Icons.chevron_right_rounded,
-                color: isDark ? Colors.grey : Colors.grey,
+                color: colorScheme.onSurface.withValues(alpha: 0.55),
                 size: 20,
               ),
             ],
@@ -253,12 +247,14 @@ class _SettingsTile extends StatelessWidget {
 }
 
 class _LanguageSheet extends StatelessWidget {
-  final bool isDark;
-
-  const _LanguageSheet({required this.isDark});
+  const _LanguageSheet();
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final textTheme = theme.textTheme;
+
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
       child: Column(
@@ -271,32 +267,26 @@ class _LanguageSheet extends StatelessWidget {
               height: 4,
               margin: const EdgeInsets.only(bottom: 20),
               decoration: BoxDecoration(
-                color: isDark ? Colors.grey : Colors.grey.shade300,
+                color: colorScheme.outline,
                 borderRadius: BorderRadius.circular(2),
               ),
             ),
           ),
           Text(
             tr('select_language'),
-            style: TextStyle(
-              fontSize: 20,
-              fontWeight: FontWeight.bold,
-              color: isDark ? Colors.white : const Color(0xFF1a1f38),
-            ),
+            style: textTheme.titleLarge?.copyWith(color: colorScheme.onSurface),
           ),
           const SizedBox(height: 20),
           _LanguageOption(
             flag: '\u{1F1FA}\u{1F1F8}',
             label: tr('language_en'),
             locale: const Locale('en', 'US'),
-            isDark: isDark,
           ),
           const SizedBox(height: 12),
           _LanguageOption(
             flag: '\u{1F1F2}\u{1F1F2}',
             label: tr('language_my'),
             locale: const Locale('my', 'MM'),
-            isDark: isDark,
           ),
           const SizedBox(height: 16),
           SizedBox(
@@ -311,10 +301,7 @@ class _LanguageSheet extends StatelessWidget {
               ),
               child: Text(
                 tr('cancel'),
-                style: TextStyle(
-                  color: isDark ? Colors.grey : Colors.grey,
-                  fontSize: 15,
-                ),
+                style: textTheme.bodyMedium?.copyWith(color: colorScheme.onSurface.withValues(alpha: 0.72)),
               ),
             ),
           ),
@@ -328,25 +315,23 @@ class _LanguageOption extends StatelessWidget {
   final String flag;
   final String label;
   final Locale locale;
-  final bool isDark;
 
   const _LanguageOption({
     required this.flag,
     required this.label,
     required this.locale,
-    required this.isDark,
   });
 
   @override
   Widget build(BuildContext context) {
     final currentLocale = context.locale;
     final isSelected = currentLocale == locale;
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final textTheme = theme.textTheme;
 
     return Material(
-      color: isSelected
-          ? (isDark ? const Color(0xFF3d83ff) : const Color(0xFF005BAA))
-              .withValues(alpha: 0.12)
-          : (isDark ? const Color(0xFF30385D) : const Color(0xFFF5F6FA)),
+      color: isSelected ? colorScheme.primary.withValues(alpha: 0.12) : colorScheme.surface,
       borderRadius: BorderRadius.circular(14),
       child: InkWell(
         onTap: () {
@@ -359,32 +344,26 @@ class _LanguageOption extends StatelessWidget {
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(14),
             border: isSelected
-                ? Border.all(
-                    color: isDark ? const Color(0xFF3d83ff) : const Color(0xFF005BAA),
-                    width: 1.5,
-                  )
+                ? Border.all(color: colorScheme.primary, width: 1.5)
                 : null,
           ),
           child: Row(
             children: [
-              Text(flag, style: const TextStyle(fontSize: 28)),
+              Text(flag, style: textTheme.titleLarge),
               const SizedBox(width: 14),
               Expanded(
                 child: Text(
                   label,
-                  style: TextStyle(
-                    fontSize: 16,
+                  style: textTheme.bodyMedium?.copyWith(
                     fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
-                    color: isSelected
-                        ? (isDark ? const Color(0xFF3d83ff) : const Color(0xFF005BAA))
-                        : (isDark ? Colors.white : const Color(0xFF1a1f38)),
+                    color: isSelected ? colorScheme.primary : colorScheme.onSurface,
                   ),
                 ),
               ),
               if (isSelected)
                 Icon(
                   Icons.check_circle_rounded,
-                  color: isDark ? const Color(0xFF3d83ff) : const Color(0xFF005BAA),
+                  color: colorScheme.primary,
                   size: 22,
                 ),
             ],

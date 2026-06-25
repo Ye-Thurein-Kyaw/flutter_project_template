@@ -1,4 +1,7 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
+import '../../../repository/home_repository.dart';
+
+  part 'home_state.dart';
 
 /// {@template home_cubit}
 /// A [Cubit] that manages the state of the Home screen.
@@ -20,7 +23,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 /// ```dart
 /// // Provide the Cubit at the widget level
 /// BlocProvider(
-///   create: (context) => HomeCubit(),
+///   create: (context) => HomeCubit(context.read<HomeRepository>()),
 ///   child: HomeScreen(),
 /// )
 ///
@@ -40,7 +43,9 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 /// {@endtemplate}
 class HomeCubit extends Cubit<HomeState> {
   /// {@macro home_cubit}
-  HomeCubit() : super(const HomeState());
+  final HomeRepository _repository;
+
+  HomeCubit(this._repository) : super(const HomeState());
 
   /// Loads sample data and updates the state.
   ///
@@ -49,11 +54,11 @@ class HomeCubit extends Cubit<HomeState> {
   Future<void> loadData() async {
     emit(state.copyWith(isLoading: true));
 
-    await Future.delayed(const Duration(seconds: 1));
+    final items = await _repository.fetchItems();
 
     emit(state.copyWith(
       isLoading: false,
-      items: ['Item 1', 'Item 2', 'Item 3'],
+      items: items,
     ));
   }
 
@@ -69,32 +74,5 @@ class HomeCubit extends Cubit<HomeState> {
       updatedItems.removeAt(index);
       emit(state.copyWith(items: updatedItems));
     }
-  }
-}
-
-/// State class for [HomeCubit].
-///
-/// Unlike Bloc which can have multiple state subclasses, Cubit typically
-/// uses a single state class with computed properties to represent different
-/// UI states (e.g., [isLoading], [hasData]).
-class HomeState {
-  final bool isLoading;
-  final List<String> items;
-
-  const HomeState({
-    this.isLoading = false,
-    this.items = const [],
-  });
-
-  bool get hasData => items.isNotEmpty;
-
-  HomeState copyWith({
-    bool? isLoading,
-    List<String>? items,
-  }) {
-    return HomeState(
-      isLoading: isLoading ?? this.isLoading,
-      items: items ?? this.items,
-    );
   }
 }

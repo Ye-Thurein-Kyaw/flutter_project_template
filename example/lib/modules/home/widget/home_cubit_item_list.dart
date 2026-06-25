@@ -13,7 +13,8 @@ class HomeCubitItemList extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final isDark = theme.brightness == Brightness.dark;
+    final colorScheme = theme.colorScheme;
+    final textTheme = theme.textTheme;
 
     return BlocBuilder<HomeCubit, HomeState>(
       builder: (context, state) {
@@ -25,7 +26,7 @@ class HomeCubitItemList extends StatelessWidget {
           return Center(
             child: Text(
               'No items yet',
-              style: TextStyle(color: isDark ? Colors.grey : Colors.grey),
+              style: textTheme.bodyMedium?.copyWith(color: colorScheme.onSurface.withValues(alpha: 0.72)),
             ),
           );
         }
@@ -36,20 +37,21 @@ class HomeCubitItemList extends StatelessWidget {
           itemCount: state.items.length,
           itemBuilder: (context, index) {
             return Card(
-              color: isDark ? const Color(0xFF1a1f38) : Colors.white,
+              color: colorScheme.surface,
               margin: const EdgeInsets.symmetric(vertical: 6),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(14),
+                side: BorderSide(color: colorScheme.outline),
+              ),
               child: ListTile(
                 title: Text(
                   state.items[index],
-                  style: TextStyle(
-                    color: isDark ? Colors.white : const Color(0xFF1a1f38),
-                  ),
+                  style: textTheme.bodyMedium?.copyWith(color: colorScheme.onSurface),
                 ),
                 trailing: IconButton(
                   icon: Icon(
                     Icons.delete_outline_rounded,
-                    color: isDark ? Colors.redAccent : Colors.red,
+                    color: colorScheme.error,
                     size: 20,
                   ),
                   onPressed: () => context.read<HomeCubit>().removeItem(index),

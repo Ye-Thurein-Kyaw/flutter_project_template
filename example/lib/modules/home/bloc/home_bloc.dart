@@ -1,6 +1,8 @@
 import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
+  import '../../../repository/home_repository.dart';
+
 part 'home_event.dart';
 part 'home_state.dart';
 
@@ -28,7 +30,7 @@ part 'home_state.dart';
 /// ```dart
 /// // Provide the Bloc at the widget level
 /// BlocProvider(
-///   create: (context) => HomeBloc()..add(HomeLoadRequested()),
+///   create: (context) => HomeBloc(context.read<HomeRepository>())..add(HomeLoadRequested()),
 ///   child: HomeScreen(),
 /// )
 ///
@@ -54,7 +56,9 @@ part 'home_state.dart';
 /// {@endtemplate}
 class HomeBloc extends Bloc<HomeEvent, HomeState> {
   /// {@macro home_bloc}
-  HomeBloc() : super(const HomeInitial()) {
+  final HomeRepository _repository;
+
+  HomeBloc(this._repository) : super(const HomeInitial()) {
     on<HomeLoadRequested>(_onHomeLoadRequested);
     on<HomeRefreshRequested>(_onHomeRefreshRequested);
     on<HomeItemAdded>(_onHomeItemAdded);
@@ -67,8 +71,7 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
   ) async {
     emit(const HomeLoadInProgress());
     try {
-      await Future.delayed(const Duration(seconds: 1));
-      final items = ['Item A', 'Item B', 'Item C'];
+      final items = await _repository.fetchItems();
       emit(HomeLoadSuccess(items: items));
     } catch (e) {
       emit(HomeLoadFailure(errorMessage: e.toString()));
@@ -81,8 +84,7 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
   ) async {
     emit(const HomeLoadInProgress());
     try {
-      await Future.delayed(const Duration(milliseconds: 500));
-      final items = ['Item A', 'Item B', 'Item C'];
+      final items = await _repository.fetchItems();
       emit(HomeLoadSuccess(items: items));
     } catch (e) {
       emit(HomeLoadFailure(errorMessage: e.toString()));

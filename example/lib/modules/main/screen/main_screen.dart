@@ -10,16 +10,17 @@ class MainScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final isDark = theme.brightness == Brightness.dark;
+    final colorScheme = theme.colorScheme;
+    final textTheme = theme.textTheme;
 
     return Scaffold(
       body: navigationShell,
       bottomNavigationBar: Container(
         decoration: BoxDecoration(
-          color: isDark ? const Color(0xFF1a1f38) : Colors.white,
+          color: colorScheme.surface,
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withValues(alpha: 0.08),
+              color: colorScheme.onSurface.withValues(alpha: 0.08),
               blurRadius: 20,
               offset: const Offset(0, -2),
             ),
@@ -35,18 +36,24 @@ class MainScreen extends StatelessWidget {
                   icon: Icons.home_rounded,
                   label: tr('home'),
                   isSelected: navigationShell.currentIndex == 0,
+                  colorScheme: colorScheme,
+                  textTheme: textTheme,
                   onTap: () => navigationShell.goBranch(0),
                 ),
                 _NavItem(
                   icon: Icons.search_rounded,
                   label: tr('search'),
                   isSelected: navigationShell.currentIndex == 1,
+                  colorScheme: colorScheme,
+                  textTheme: textTheme,
                   onTap: () => navigationShell.goBranch(1),
                 ),
                 _NavItem(
                   icon: Icons.person_rounded,
                   label: tr('profile'),
                   isSelected: navigationShell.currentIndex == 2,
+                  colorScheme: colorScheme,
+                  textTheme: textTheme,
                   onTap: () => navigationShell.goBranch(2),
                 ),
               ],
@@ -62,20 +69,21 @@ class _NavItem extends StatelessWidget {
   final IconData icon;
   final String label;
   final bool isSelected;
+  final ColorScheme colorScheme;
+  final TextTheme textTheme;
   final VoidCallback onTap;
 
   const _NavItem({
     required this.icon,
     required this.label,
     required this.isSelected,
+    required this.colorScheme,
+    required this.textTheme,
     required this.onTap,
   });
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final isDark = theme.brightness == Brightness.dark;
-
     return GestureDetector(
       onTap: onTap,
       behavior: HitTestBehavior.opaque,
@@ -88,8 +96,7 @@ class _NavItem extends StatelessWidget {
         ),
         decoration: BoxDecoration(
           color: isSelected
-              ? (isDark ? const Color(0xFF3d83ff) : const Color(0xFF005BAA))
-                  .withValues(alpha: 0.15)
+              ? colorScheme.primary.withValues(alpha: 0.15)
               : Colors.transparent,
           borderRadius: BorderRadius.circular(16),
         ),
@@ -99,20 +106,17 @@ class _NavItem extends StatelessWidget {
             Icon(
               icon,
               color: isSelected
-                  ? (isDark ? const Color(0xFF3d83ff) : const Color(0xFF005BAA))
-                  : (isDark ? Colors.grey : Colors.grey),
+                  ? colorScheme.primary
+                  : colorScheme.onSurface.withValues(alpha: 0.6),
               size: 24,
             ),
             if (isSelected) ...[
               const SizedBox(width: 8),
               Text(
                 label,
-                style: TextStyle(
-                  color: isDark
-                      ? const Color(0xFF3d83ff)
-                      : const Color(0xFF005BAA),
+                style: textTheme.bodySmall?.copyWith(
+                  color: colorScheme.primary,
                   fontWeight: FontWeight.w600,
-                  fontSize: 13,
                 ),
               ),
             ],

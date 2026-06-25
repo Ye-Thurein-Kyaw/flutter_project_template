@@ -78,6 +78,7 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
+import 'config/locale_config/locale_cubit.dart';
 import 'config/routes.dart';
 import 'config/shared_pref.dart';
 import 'config/theme_config/theme_cubit.dart';
@@ -91,11 +92,24 @@ Future<void> main() async {
   await EasyLocalization.ensureInitialized();
   await pref.initPreferences();
   ThemeMode themeMode = pref.getDarkMode();
+  final savedLocale = pref.getLocale();
+  final localeParts = savedLocale.split('-');
+  final initialLocale = Locale(
+    localeParts.first,
+    localeParts.length > 1 ? localeParts[1] : '',
+  );
+
   runApp(
     EasyLocalization(
-      supportedLocales: [Locale('en', 'US'), Locale('my', 'MM')],
+      supportedLocales: const [Locale('en', 'US'), Locale('my', 'MM')],
       path: 'languages',
-      child: BlocProvider(create: (context) => ThemeCubit(themeMode), child: const MyApp()),
+      child: MultiBlocProvider(
+        providers: [
+          BlocProvider(create: (context) => ThemeCubit(themeMode)),
+          BlocProvider(create: (context) => LocaleCubit(initialLocale)),
+        ],
+        child: const MyApp(),
+      ),
     ),
   );
 }
