@@ -1,10 +1,10 @@
 ## 0.0.2
 
-* Added locale cubit provider template
-* Updated example app with locale cubit integration
-* Updated theme helper and shared preferences configuration
-* Added home cubit state management
-* Updated routing, home screen, and other module screens
+* Replace manual usage of `Color` in UI layer with `Theme.of(context)` for better theme management and styling
+* Updated example app with the latest changes
+* Updated theme helper for more typography and color options
+* Separate home_cubit and home_state for better state management
+* Fix provider not found issue for locale cubit
 
 ## 0.0.1
 
