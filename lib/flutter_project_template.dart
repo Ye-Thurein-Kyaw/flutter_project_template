@@ -96,13 +96,12 @@ Future<void> main() async {
   final localeParts = savedLocale.split('-');
   final initialLocale = Locale(
     localeParts.first,
-    localeParts.length > 1 ? localeParts[1] : null,
+    localeParts.length > 1 ? localeParts[1] : '',
   );
 
   runApp(
     EasyLocalization(
       supportedLocales: const [Locale('en', 'US'), Locale('my', 'MM')],
-      startLocale: initialLocale,
       path: 'languages',
       child: MultiBlocProvider(
         providers: [
